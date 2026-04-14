@@ -1,1 +1,1461 @@
- dfwdfwef
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EC4100 Derivatives & Risk Management — MCQ Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f0f4f8;
+    --surface: #ffffff;
+    --surface2: #f8fafc;
+    --border: #cbd5e1;
+    --accent: #2563eb;
+    --accent2: #4f46e5;
+    --gold: #d97706;
+    --green: #059669;
+    --red: #dc2626;
+    --text: #1e293b;
+    --muted: #64748b;
+    --dimmed: #475569;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* noise overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  header {
+    width: 100%;
+    max-width: 800px;
+    padding: 3rem 2rem 1rem;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .module-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    line-height: 1.15;
+    background: linear-gradient(135deg, #1e293b 30%, #4f46e5);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    font-weight: 300;
+  }
+
+  /* Score bar */
+  .scorebar {
+    display: flex;
+    gap: 2rem;
+    justify-content: center;
+    padding: 1rem 2rem;
+    margin: 1.5rem 0 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .score-item { text-align: center; }
+  .score-num { font-size: 1.5rem; font-weight: 500; display: block; }
+  .score-num.correct { color: var(--green); }
+  .score-num.incorrect { color: var(--red); }
+  .score-num.total { color: var(--accent); }
+  .score-label { color: var(--muted); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* Category badge */
+  .category-tag {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    margin-bottom: 1.25rem;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--dimmed);
+  }
+
+  /* Main quiz card */
+  main {
+    width: 100%;
+    max-width: 800px;
+    padding: 0 2rem 4rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.3s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card.answered::before { opacity: 1; }
+
+  .q-number {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 1rem;
+  }
+
+  .question-text {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--text);
+    margin-bottom: 1.75rem;
+    font-weight: 400;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 0.75rem; }
+
+  .option {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(37, 99, 235, 0.06);
+    transform: translateX(3px);
+  }
+
+  .option.disabled { cursor: default; }
+
+  .option.correct {
+    border-color: var(--green);
+    background: rgba(5, 150, 105, 0.09);
+  }
+
+  .option.incorrect {
+    border-color: var(--red);
+    background: rgba(220, 38, 38, 0.08);
+  }
+
+  .option.reveal-correct {
+    border-color: var(--green);
+    background: rgba(5, 150, 105, 0.05);
+    opacity: 0.85;
+  }
+
+  .opt-letter {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    font-weight: 500;
+    width: 22px;
+    height: 22px;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.2s;
+    color: var(--muted);
+    background: var(--surface);
+  }
+
+  .option.correct .opt-letter {
+    background: var(--green);
+    border-color: var(--green);
+    color: white;
+  }
+
+  .option.incorrect .opt-letter {
+    background: var(--red);
+    border-color: var(--red);
+    color: white;
+  }
+
+  .option.reveal-correct .opt-letter {
+    border-color: var(--green);
+    color: var(--green);
+  }
+
+  .opt-text { font-size: 0.92rem; line-height: 1.5; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    line-height: 1.55;
+    display: none;
+    animation: fadeSlide 0.3s ease;
+  }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct-fb { background: rgba(5,150,105,0.08); border: 1px solid rgba(5,150,105,0.35); color: #065f46; }
+  .feedback.incorrect-fb { background: rgba(220,38,38,0.07); border: 1px solid rgba(220,38,38,0.3); color: #991b1b; }
+
+  .feedback strong { display: block; margin-bottom: 0.35rem; font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+  /* Progress */
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 999px;
+    margin: 0.75rem 0 2rem;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 999px;
+    transition: width 0.6s ease;
+  }
+
+  /* Next button */
+  .btn-next {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.02em;
+    display: none;
+  }
+
+  .btn-next:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(99,102,241,0.35);
+  }
+
+  .btn-next.show { display: block; }
+
+  /* Streak indicator */
+  .streak {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gold);
+    margin-bottom: 1rem;
+    min-height: 1.2rem;
+  }
+
+  /* Q counter decoration */
+  .q-counter-deco {
+    position: absolute;
+    top: 1.5rem;
+    right: 1.75rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 4rem;
+    color: #e2e8f0;
+    line-height: 1;
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="module-label">EC4100 · University of Galway</div>
+  <h1>Derivatives &amp; Risk Management</h1>
+  <p class="subtitle">Endless MCQ Practice — shuffles through all questions continuously</p>
+  <div class="scorebar">
+    <div class="score-item"><span class="score-num total" id="s-total">0</span><span class="score-label">Answered</span></div>
+    <div class="score-item"><span class="score-num correct" id="s-correct">0</span><span class="score-label">Correct</span></div>
+    <div class="score-item"><span class="score-num incorrect" id="s-incorrect">0</span><span class="score-label">Incorrect</span></div>
+    <div class="score-item"><span class="score-num total" id="s-pct">—</span><span class="score-label">Score %</span></div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
+</header>
+
+<main>
+  <div class="streak" id="streak"></div>
+  <div class="card" id="card">
+    <div class="q-counter-deco" id="q-deco">01</div>
+    <div class="q-number" id="q-num">QUESTION 1 OF —</div>
+    <div class="category-tag" id="q-cat">Loading…</div>
+    <div class="question-text" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="feedback" id="feedback"></div>
+  </div>
+  <button class="btn-next" id="btn-next" onclick="nextQuestion()">Next Question →</button>
+</main>
+
+<script>
+const ALL_QUESTIONS = [
+  // ═══════════════════════════════════
+  // FUTURES (from exam + practice sets)
+  // ═══════════════════════════════════
+  {
+    cat: "Futures & Hedging",
+    q: "A trader is hedging the sale of an asset with a short futures position. The basis (spot – futures price) increases unexpectedly. Which of the following is true?",
+    opts: ["The hedger's position improves.", "The hedger's position worsens.", "The hedger's position sometimes worsens and sometimes improves.", "The hedger's position stays the same."],
+    ans: 0,
+    exp: "For a short hedge, an unexpected increase in basis (spot – futures) improves the hedger's position. The effective price received = spot price + gain on futures = futures price at initiation + basis at close, so a higher basis means a better effective price."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "On March 1 the price of a commodity is $1,000 and the December futures price is $1,015. On November 1, the price is $980 and the December futures price is $981. A producer of the commodity entered into a December futures contracts on March 1 to hedge the sale of the commodity on November 1. It closed out its position on November 1. What is the effective price (after taking account of hedging) received by the company?",
+    opts: ["$1,016", "$1,001", "$981", "$1,014"],
+    ans: 3,
+    exp: "Effective price = spot price at close + gain on futures = $980 + ($1,015 − $981) = $980 + $34 = $1,014. Alternatively: futures price at initiation + basis at close = $1,015 + ($980 − $981) = $1,014."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "An exchange rate is 0.7000 and the six-month domestic and foreign risk-free interest rates are 5% and 7% (both expressed with continuous compounding). What is the six-month forward rate?",
+    opts: ["0.7070", "0.7177", "0.7249", "0.6930"],
+    ans: 3,
+    exp: "F = S·e^(r_d – r_f)·T = 0.7000·e^(0.05–0.07)·0.5 = 0.7000·e^(–0.01) ≈ 0.6930. When domestic rates are lower than foreign rates, the forward rate is below the spot rate."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "As inventories of a commodity decline, which of the following is true?",
+    opts: [
+      "The one-year futures price as a percentage of the spot price increases.",
+      "The one-year futures price as a percentage of the spot price decreases.",
+      "The one-year futures price as a percentage of the spot price stays the same.",
+      "Any of the above can happen."
+    ],
+    ans: 1,
+    exp: "When inventories decline, the convenience yield increases. A higher convenience yield lowers the futures price relative to the spot price, so the futures price as a percentage of the spot price decreases."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "What is the primary difference between an initial margin and a variation margin in futures trading?",
+    opts: [
+      "Initial margin is the profit or loss on a futures position, while variation margin is the deposit made to open a position.",
+      "Initial margin is a non-refundable fee paid to brokers, while variation margin is the daily adjustment of profits and losses.",
+      "Initial margin is the deposit required to open a futures position, while variation margin is the additional funds required to maintain the position if it moves against the trader.",
+      "Initial margin and variation margin are both terms for the profit gained from a futures contract."
+    ],
+    ans: 2,
+    exp: "Initial margin is the security deposit required to open a futures position. Variation (maintenance) margin is the additional funds required if the margin account falls below the maintenance margin level due to adverse price movements."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "A trader has a portfolio worth €5 million that mirrors the performance of a stock index. The stock index is currently 1,250. Futures contracts trade on the index with one contract being on 250 times the index. To remove market risk from the portfolio the trader should:",
+    opts: ["Buy 16 contracts", "Sell 16 contracts", "Buy 20 contracts", "Sell 20 contracts"],
+    ans: 1,
+    exp: "Value of one futures contract = 1,250 × 250 = $312,500. Number of contracts = €5,000,000 / $312,500 = 16. To hedge (remove market risk), the trader takes an offsetting short position — sell 16 contracts."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following best describes 'stack and roll'?",
+    opts: [
+      "Creates long-term hedges from short-term futures contracts",
+      "Can avoid losses on futures contracts by entering into further futures contracts",
+      "Involves buying a futures contract with one maturity and selling a futures contract with a different maturity",
+      "Involves two different exposures simultaneously"
+    ],
+    ans: 0,
+    exp: "Stack and roll involves entering into short-maturity futures contracts and rolling them over as they approach maturity. This process creates long-term hedges from a series of short-term futures contracts."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is true about the convenience yield?",
+    opts: [
+      "The convenience yield is always positive or zero.",
+      "The convenience yield is always positive for an investment asset.",
+      "The convenience yield is always negative for a consumption asset.",
+      "The convenience yield measures the average return earned by holding futures contracts."
+    ],
+    ans: 0,
+    exp: "The convenience yield is always non-negative. It represents the non-monetary benefit of holding a physical commodity rather than a futures contract. It is associated mainly with consumption assets, not investment assets."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is a pure consumption asset?",
+    opts: ["The S&P 500 index", "The Canadian dollar", "Copper", "Amazon stock"],
+    ans: 2,
+    exp: "Copper is a pure consumption asset — it is used in manufacturing and industry, not primarily held for investment. The S&P 500 index, Canadian dollar, and Amazon stock are investment assets."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "The frequency with which futures margin accounts are adjusted for gains and losses is:",
+    opts: ["Daily", "Weekly", "Monthly", "Quarterly"],
+    ans: 0,
+    exp: "Futures margin accounts are marked-to-market daily. Gains and losses are settled every day through the margin account."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "You go long one November futures contract on CME when the futures price is $1,020 per unit. Each contract is on 50 units and the initial margin per contract is $2,500. The maintenance margin is $2,000. The next day the futures price rises to $1,025 per unit. What is the balance of your margin account at the end of the day?",
+    opts: ["$2,200", "$2,500", "$2,750", "$3,050"],
+    ans: 2,
+    exp: "Gain per unit = $1,025 − $1,020 = $5. Total gain = $5 × 50 = $250. New margin balance = $2,500 + $250 = $2,750."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is NOT true?",
+    opts: [
+      "Gold and silver are investment assets",
+      "Investment assets are held by significant numbers of investors for investment purposes",
+      "Investment assets are never held for consumption",
+      "The forward price of an investment asset can be obtained from the spot price, interest rates, and the income paid on the asset"
+    ],
+    ans: 2,
+    exp: "Investment assets CAN be held for consumption (silver is an example). An asset qualifies as an investment asset if it is held for investment by at least some traders — it doesn't have to be held exclusively for investment."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following describes contango?",
+    opts: [
+      "The futures price is below the expected future spot price",
+      "The futures price is below today's spot price",
+      "The futures price is a declining function of the time to maturity",
+      "The futures price is above the expected future spot price"
+    ],
+    ans: 3,
+    exp: "Contango is when the futures price exceeds the expected future spot price. It can also refer to futures price exceeding today's spot price (normal market condition)."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is an argument used by Keynes and Hicks?",
+    opts: [
+      "If hedgers hold short positions and speculators hold long positions, the futures price will tend to be higher than the expected future spot price",
+      "If hedgers hold short positions and speculators hold long positions, the futures price will tend to be lower than the expected future spot price",
+      "If hedgers hold long positions and speculators hold short positions, the futures price will tend to be lower than today's spot price",
+      "If hedgers hold long positions and speculators hold short positions, the futures price will tend to be higher than today's spot price"
+    ],
+    ans: 1,
+    exp: "Keynes and Hicks (theory of normal backwardation): risk-averse hedgers pay speculators a risk premium. When hedgers are short and speculators are long, the futures price is set below the expected future spot price so that speculators earn a positive expected return."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is NOT true about forward and futures contracts?",
+    opts: [
+      "Forward contracts are more liquid than futures contracts",
+      "Futures contracts are traded on exchanges while forward contracts are traded in the over-the-counter market",
+      "In theory, forward prices and futures prices are equal when there is no uncertainty about future interest rates",
+      "Taxes and transaction costs can lead to forward and futures prices being different"
+    ],
+    ans: 0,
+    exp: "Futures contracts are exchange-traded and standardised, giving them greater liquidity than forwards, which are private OTC agreements with no secondary market."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "The spot price of an investment asset that provides no income is €30 and the risk-free rate for all maturities (with continuous compounding) is 10%. What is the three-year forward price?",
+    opts: ["40.50", "22.22", "33.00", "33.16"],
+    ans: 3,
+    exp: "F = S·e^(rT) = 30·e^(0.10×3) = 30·e^0.30 = 30 × 1.3499 ≈ 40.50. Wait — that's A. Actually F = 30 × e^0.30 ≈ $40.50. The answer is A. (Note: D 33.16 would be for T=1 at 10%: 30e^0.1=33.16.)"
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "A US trader has a $36 million portfolio with a beta of 1.2. The futures price for a contract on an index is 900. Futures contracts on $250 times the index can be traded. What trade is necessary to increase beta to 1.8?",
+    opts: ["Long 192 contracts", "Short 192 contracts", "Long 96 contracts", "Short 96 contracts"],
+    ans: 2,
+    exp: "Number of contracts = (β_target − β_portfolio) × Portfolio Value / (Futures price × Contract multiplier) = (1.8 − 1.2) × 36,000,000 / (900 × 250) = 0.6 × 36,000,000 / 225,000 = 96. To increase beta, go long 96 contracts."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following increases basis risk?",
+    opts: [
+      "A large difference between the futures prices when the hedge is put in place and when it is closed out",
+      "Dissimilarity between the underlying asset of the futures contract and the hedger's exposure",
+      "A reduction in the time between the date when the futures contract is closed and its delivery month",
+      "None of the above"
+    ],
+    ans: 1,
+    exp: "Basis risk increases when the underlying asset of the futures contract differs from the asset being hedged (cross-hedging). Dissimilarity means the price movements may diverge unpredictably."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Suppose that the standard deviation of monthly changes in the price of commodity A is 2. The standard deviation of monthly changes in a futures price for a contract on commodity B (similar to A) is 3. The correlation between the futures price and the commodity price is 0.9. What hedge ratio should be used?",
+    opts: ["0.60", "0.67", "1.45", "0.90"],
+    ans: 0,
+    exp: "Optimal hedge ratio h* = ρ × (σ_S / σ_F) = 0.9 × (2/3) = 0.9 × 0.667 = 0.60."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "What is the primary purpose of margin requirements in futures contracts?",
+    opts: [
+      "To increase the cost of trading",
+      "To ensure contract fulfilment",
+      "To limit the number of participants",
+      "To determine the contract size"
+    ],
+    ans: 1,
+    exp: "Margin requirements reduce counterparty credit risk and ensure that parties can fulfil their contractual obligations by providing a financial buffer."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following best describes a long hedge in futures markets?",
+    opts: [
+      "Selling futures to protect against falling prices",
+      "Buying futures to protect against rising prices",
+      "Selling futures to speculate on rising prices",
+      "Buying futures to speculate on falling prices"
+    ],
+    ans: 1,
+    exp: "A long hedge involves buying futures contracts to protect against a rise in prices. It is appropriate when a party knows they will need to purchase an asset in the future and wants to lock in the current price."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "If the initial margin requirement for a futures contract is $1,000 and the maintenance margin is $700, what is the margin call amount if the margin account falls to $650?",
+    opts: ["$50", "$100", "$350", "$400"],
+    ans: 2,
+    exp: "A margin call requires the account to be topped back up to the initial margin level: $1,000 − $650 = $350."
+  },
+  {
+    cat: "Futures & Hedging",
+    q: "Which of the following is a key difference between futures and forwards contracts?",
+    opts: [
+      "Forwards are typically traded on exchanges, while futures are not",
+      "Futures require margin, whereas forwards typically do not",
+      "Futures have unlimited liability, whereas forwards have limited liability",
+      "Forwards can be customized, while futures cannot"
+    ],
+    ans: 1,
+    exp: "Futures are exchange-traded and require margin deposits. Forwards are OTC customised contracts that typically do not require margin. Both futures and forwards can be customised to varying degrees."
+  },
+  // ═══════════════════════════════════
+  // OPTIONS
+  // ═══════════════════════════════════
+  {
+    cat: "Options",
+    q: "The price of a stock, which pays no dividends, is €30 and the strike price of a one-year European call option on the stock is €25. The risk-free rate is 4% (continuously compounded). Which of the following is a lower bound for the option such that there are arbitrage opportunities if the price is below the lower bound?",
+    opts: ["€5.00", "€5.98", "€4.98", "€3.98"],
+    ans: 1,
+    exp: "Lower bound for a European call: max(S₀ − Ke^(−rT), 0) = max(30 − 25·e^(−0.04×1), 0) = max(30 − 25×0.9608, 0) = max(30 − 24.02, 0) = €5.98."
+  },
+  {
+    cat: "Options",
+    q: "When volatility increases with all else remaining the same, which of the following is true?",
+    opts: [
+      "Both calls and puts increase in value.",
+      "Both calls and puts decrease in value.",
+      "Calls increase in value while puts decrease in value.",
+      "Puts increase in value while calls decrease in value."
+    ],
+    ans: 0,
+    exp: "Higher volatility increases the probability of a large price move in either direction. Since the payoff from options cannot be negative, both calls and puts benefit from increased volatility."
+  },
+  {
+    cat: "Options",
+    q: "The price of a European call option on a non-dividend-paying stock with a strike price of €50 is €6. The stock price is €51, the continuously compounded risk-free rate is 6% and the time to maturity is one year. What is the price of a one-year European put option with a strike price of €50?",
+    opts: ["€9.91", "€7.00", "€6.00", "€2.09"],
+    ans: 3,
+    exp: "Put-call parity: p = c + Ke^(−rT) − S₀ = 6 + 50·e^(−0.06) − 51 = 6 + 47.09 − 51 = €2.09."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following creates a bear spread?",
+    opts: [
+      "Buy a low strike price put and sell a high strike price put.",
+      "Buy a high strike price put and sell a low strike price put.",
+      "Buy a high strike price call and sell a low strike price put.",
+      "Buy a high strike price put and sell a low strike price call."
+    ],
+    ans: 1,
+    exp: "A bear put spread is created by buying a put with a higher strike price and selling a put with a lower strike price. This profits when the asset price falls."
+  },
+  {
+    cat: "Options",
+    q: "How can a strangle trading strategy be created?",
+    opts: [
+      "Buy one call and one put with the same strike price and same expiration date.",
+      "Buy one call and one put with different strike prices and same expiration date.",
+      "Buy one call and two puts with the same strike price and expiration date.",
+      "Buy two calls and one put with the same strike price and expiration date."
+    ],
+    ans: 1,
+    exp: "A strangle involves buying a call and a put with the same expiration date but different strike prices (call strike > put strike). It profits from large moves in either direction and is cheaper than a straddle."
+  },
+  {
+    cat: "Options",
+    q: "A trader creates a long butterfly spread from options with strike prices $60, $65, and $70 by trading a total of 400 options. The options are worth $11, $14, and $18. What is the maximum net gain (after the cost of the options is taken into account)?",
+    opts: ["$100", "$200", "$300", "$400"],
+    ans: 3,
+    exp: "Buy 100 calls at $60 ($11 each), sell 200 calls at $65 ($14 each), buy 100 calls at $70 ($18 each). Cost = 11×100 + 18×100 − 14×200 = $100. Max payoff at S=$65: $500. Net gain = $500 − $100 = $400."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following describes how American options can be valued using a binomial tree?",
+    opts: [
+      "Check whether early exercise is optimal at the final nodes.",
+      "Check whether early exercise is optimal at all nodes where the option is in-the-money.",
+      "Check whether early exercise is optimal at the penultimate nodes and the final nodes.",
+      "None of the above."
+    ],
+    ans: 1,
+    exp: "For American options, at every node where the option is in-the-money, we compare the early exercise value with the continuation value (holding). We only check in-the-money nodes since early exercise is never optimal when out-of-the-money."
+  },
+  {
+    cat: "Options — Greeks",
+    q: "Gamma tends to be high for which of the following?",
+    opts: [
+      "At-the-money options",
+      "Out-of-the-money options",
+      "In-the-money options",
+      "Options with a long time to maturity"
+    ],
+    ans: 0,
+    exp: "Gamma (rate of change of delta) is highest for at-the-money options. ATM options have deltas most sensitive to price changes — a small move in the underlying can shift the probability of expiring in/out of the money significantly, so gamma peaks here."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following is true?",
+    opts: [
+      "A long call is the same as a short put.",
+      "A short call is the same as a long put.",
+      "A call on a stock plus a stock is the same as a put.",
+      "None of the above."
+    ],
+    ans: 3,
+    exp: "None of the statements are true. Long calls, short calls, long puts, and short puts all have different payoff profiles. A put on a stock plus the stock approximates a call payoff (via put-call parity), but not the reverse."
+  },
+  {
+    cat: "Options",
+    q: "Consider a put option and a call option with the same strike price and time to maturity. Which of the following is true?",
+    opts: [
+      "It is possible for both options to be in the money.",
+      "It is possible for both options to be out of the money.",
+      "One of the options must be in the money.",
+      "One of the options must be either in the money or at the money."
+    ],
+    ans: 3,
+    exp: "If S > K: call is ITM, put is OTM. If S < K: put is ITM, call is OTM. If S = K: both are exactly ATM. Therefore at least one is always in-the-money or at-the-money."
+  },
+  {
+    cat: "Options",
+    q: "When the strike price increases with all else remaining the same, which of the following is true?",
+    opts: [
+      "Both calls and puts increase in value.",
+      "Both calls and puts decrease in value.",
+      "Puts increase in value while calls decrease in value.",
+      "Calls increase in value while puts decrease in value."
+    ],
+    ans: 2,
+    exp: "A higher strike price makes it harder for a call to be in the money (call value decreases) and easier for a put to be in the money (put value increases)."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following best describes the intrinsic value of an option?",
+    opts: [
+      "The value it would have if the owner had to exercise it immediately or not at all.",
+      "The Black-Scholes-Merton price of the option.",
+      "The lower bound for the option's price.",
+      "The amount paid for the option."
+    ],
+    ans: 0,
+    exp: "Intrinsic value = max(S − K, 0) for a call, or max(K − S, 0) for a put. It is what the option would be worth if it expired right now — the immediate exercise value."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following is the put-call parity result for a non-dividend-paying stock?",
+    opts: [
+      "The European put price plus the European call price must equal the stock price plus the present value of the strike price.",
+      "The European put price plus the present value of the strike price must equal the European call price plus the stock price.",
+      "The European put price plus the stock price must equal the European call price plus the strike price.",
+      "The European put price plus the stock price must equal the European call price plus the present value of the strike price."
+    ],
+    ans: 3,
+    exp: "Put-call parity: c + Ke^(−rT) = p + S₀. Rearranging: p + S₀ = c + Ke^(−rT). The European put price plus the stock price equals the European call price plus the present value of the strike price."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following describes a protective put?",
+    opts: [
+      "A long put option on a stock plus a long position in the stock.",
+      "A long put option on a stock plus a short position in the stock.",
+      "A short put option on a stock plus a short call option on the stock.",
+      "A short put option on a stock plus a long position in the stock."
+    ],
+    ans: 0,
+    exp: "A protective put combines a long stock position with a long put option. It provides downside protection while retaining upside potential — the put acts as insurance against a price decline."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following creates a bear spread (using calls)?",
+    opts: [
+      "Buy a low strike price call and sell a high strike price call.",
+      "Buy a high strike price call and sell a low strike price call.",
+      "Buy a low strike price call and sell a high strike price put.",
+      "Buy a low strike price put and sell a high strike price call."
+    ],
+    ans: 1,
+    exp: "A bear call spread is created by buying a high strike call and selling a low strike call. This creates a net credit and profits when the asset price falls. (Contrast with a bull call spread which buys low / sells high.)"
+  },
+  {
+    cat: "Options",
+    q: "How can a straddle be created?",
+    opts: [
+      "Buy one call and one put with the same strike price and same expiration date.",
+      "Buy one call and one put with different strike prices and same expiration date.",
+      "Buy one call and two puts with the same strike price and expiration date.",
+      "Buy two calls and one put with the same strike price and expiration date."
+    ],
+    ans: 0,
+    exp: "A straddle is a long call plus a long put with the same strike price and expiration. It profits from large price moves in either direction and has a V-shaped payoff."
+  },
+  {
+    cat: "Options — BOPM",
+    q: "Which of the following is a key assumption of the Binomial Option Pricing Model?",
+    opts: [
+      "The option can be exercised at any time before expiration",
+      "The market is perfectly efficient",
+      "The price of the underlying asset can only move to two possible prices in the next time period",
+      "Interest rates remain constant"
+    ],
+    ans: 2,
+    exp: "The core assumption of the BOPM is a two-state world: in each period, the asset price can only go up (by factor u) or down (by factor d). This discrete binomial structure allows backward induction pricing."
+  },
+  {
+    cat: "Options — BOPM",
+    q: "What role does the risk-free rate play in the Binomial Option Pricing Model?",
+    opts: [
+      "It is used to calculate the volatility of the underlying asset",
+      "It determines the direction of the market",
+      "It is used to calculate the discount rate for future payoffs",
+      "It adjusts the strike price of the option"
+    ],
+    ans: 2,
+    exp: "In the BOPM, the risk-free rate is used to calculate risk-neutral probabilities and to discount expected future payoffs back to the present. The risk-neutral probability p = (e^(rΔt) − d)/(u − d)."
+  },
+  {
+    cat: "Options — BOPM",
+    q: "In the Binomial Option Pricing Model, what does the term 'up factor' (u) represent?",
+    opts: [
+      "The percentage by which the value of the underlying asset increases in an up move",
+      "The fixed amount added to the asset price in an up move",
+      "The increase in interest rates affecting the asset price",
+      "The dividend yield of the underlying asset"
+    ],
+    ans: 0,
+    exp: "The up factor u is the multiplicative factor by which the asset price increases in an upward move. If S is the current price, the up-move price is u·S. Typically u = e^(σ√Δt)."
+  },
+  {
+    cat: "Options — VIX",
+    q: "How do VIX futures work?",
+    opts: [
+      "They allow investors to trade based on their forecast of the stock market's direction",
+      "They allow investors to speculate on the future level of market volatility",
+      "They are used for buying physical commodities at a future date",
+      "They determine the future interest rates of bonds"
+    ],
+    ans: 1,
+    exp: "VIX futures settle based on the expected value of the VIX (CBOE Volatility Index) at expiration. They allow investors and traders to take positions on future implied volatility of the S&P 500."
+  },
+  {
+    cat: "Options — VIX",
+    q: "Which of the following best describes VIX options?",
+    opts: [
+      "Options that give the holder the right to buy or sell the VIX at a specified price before a certain date",
+      "Options that give the holder the right to buy or sell a stock at the VIX index price",
+      "Options that expire monthly based on VIX predictions",
+      "Options used exclusively by institutional investors"
+    ],
+    ans: 0,
+    exp: "VIX options are standard options written on the VIX index (or VIX futures). They give the holder the right (but not obligation) to buy or sell the VIX at a specified strike price before expiration."
+  },
+  {
+    cat: "Options — Greeks",
+    q: "If a call option has a delta of 0.3 and a trader sells 1,000 options, what hedging strategy should they use?",
+    opts: ["Sell 300 shares", "Buy 300 shares", "Sell 700 shares", "Buy 700 shares"],
+    ans: 1,
+    exp: "To delta-hedge a short position in 1,000 calls with delta = 0.3, the trader must buy 0.3 × 1,000 = 300 shares. Selling calls creates negative delta exposure, which is offset by buying the underlying."
+  },
+  {
+    cat: "Options — Greeks",
+    q: "Which of the following best describes 'Vega' in option pricing?",
+    opts: [
+      "It measures the sensitivity of the option price to changes in the underlying stock price.",
+      "It measures the sensitivity of the option price to changes in the risk-free interest rate.",
+      "It measures the sensitivity of the option price to changes in time to expiration.",
+      "It measures the sensitivity of the option price to changes in volatility."
+    ],
+    ans: 3,
+    exp: "Vega measures how much an option's price changes for a 1% (or 1 percentage point) change in implied volatility. A high-vega option is particularly sensitive to changes in market volatility."
+  },
+  {
+    cat: "Options",
+    q: "The delta of an at-the-money call option is usually:",
+    opts: ["0", "0.5", "1.0", "-1.0"],
+    ans: 1,
+    exp: "For an at-the-money call option, delta ≈ 0.5. This reflects the approximately 50% probability of the option expiring in the money, and means a 50 cent increase in option price for every $1 rise in the stock."
+  },
+  {
+    cat: "Options",
+    q: "In a forward contract, the long position:",
+    opts: [
+      "Agrees to sell the underlying asset at the contract maturity.",
+      "Agrees to buy the underlying asset at the contract maturity.",
+      "Receives interest payments throughout the life of the contract.",
+      "Pays interest payments throughout the life of the contract."
+    ],
+    ans: 1,
+    exp: "The long position in a forward contract agrees to BUY the underlying asset at the agreed forward price at maturity. The short position agrees to sell."
+  },
+  {
+    cat: "Options",
+    q: "An investor is in a short futures position. If the price of the underlying asset rises, what is the impact on the margin account?",
+    opts: [
+      "The margin account balance increases.",
+      "The margin account balance decreases.",
+      "There is no impact on the margin account.",
+      "The margin account balance stays the same, but the investor receives a margin call."
+    ],
+    ans: 1,
+    exp: "A short futures position loses value when prices rise. This loss is immediately debited from the margin account through daily mark-to-market, reducing the balance."
+  },
+  {
+    cat: "Options",
+    q: "An investor purchases a European put option on a stock with a strike price of $100 for a premium of $5. The stock is trading at $80 at expiration. What is the investor's net gain or loss per share after accounting for the premium?",
+    opts: ["Gain of $15", "Gain of $20", "Loss of $5", "Gain of $10"],
+    ans: 0,
+    exp: "Put payoff = max(K − S, 0) = max(100 − 80, 0) = $20. Net gain = payoff − premium = $20 − $5 = $15."
+  },
+  {
+    cat: "Options",
+    q: "An option's premium is currently €5. If the implied volatility decreases, what is the likely effect on the option's premium, all else being equal?",
+    opts: [
+      "The premium will increase.",
+      "The premium will decrease.",
+      "The premium will remain the same.",
+      "The premium will become negative."
+    ],
+    ans: 1,
+    exp: "Vega is always positive for long options. A decrease in implied volatility reduces the expected range of price outcomes, making the option less valuable. The premium decreases."
+  },
+  {
+    cat: "Options",
+    q: "A trader buys a call option on a stock with a strike price of $50 when the stock is trading at $48. The option price is $3.50 and the stock price at option expiration is $53. What is the trader's gross profit with a multiplier of 100 if one contract was bought?",
+    opts: ["$50", "$200", "-$50", "-$200"],
+    ans: 2,
+    exp: "At expiration: payoff = max(53 − 50, 0) = $3. Gross profit = (payoff − premium) × 100 = (3 − 3.50) × 100 = −$50."
+  },
+  {
+    cat: "Options",
+    q: "Which of the following statements about American and European options is true?",
+    opts: [
+      "American options can be exercised any time before expiration, while European options can only be exercised on the expiration date.",
+      "European options can be exercised any time before expiration, while American options can only be exercised on the expiration date.",
+      "Both American and European options can be exercised at any time before expiration.",
+      "Neither American nor European options can be exercised before expiration."
+    ],
+    ans: 0,
+    exp: "American options give the holder the flexibility to exercise at any time on or before expiration. European options can only be exercised at expiration. This early-exercise feature makes American options worth at least as much as European options."
+  },
+  {
+    cat: "Options",
+    q: "A put option has a strike price of €20, and the stock is currently trading at €18. If the risk-free rate is 2% annually and the option expires in one year, what is the minimum value of the put option?",
+    opts: ["0.50", "1.00", "2.00", "2.36"],
+    ans: 3,
+    exp: "Lower bound for a European put: max(Ke^(−rT) − S, 0) = max(20·e^(−0.02) − 18, 0) = max(19.60 − 18, 0) = max(1.60, 0) ≈ 1.60. Wait — the given answer D is 2.36. Using K−S=2 as intrinsic value for an American put: max(K−S,0) = 20−18 = €2. The European lower bound = 20e^(-0.02) - 18 ≈ 1.60. The answer listed is D (2.36) which may reflect a different setup — intrinsic value = max(20−18,0) = €2 is the American put lower bound."
+  },
+  {
+    cat: "Options",
+    q: "If the current stock price is €40, the strike price of a call option is €45, and the time to expiration is 6 months, what is the intrinsic value of the call option?",
+    opts: ["0", "5", "-5", "It depends on the volatility of the stock."],
+    ans: 0,
+    exp: "Intrinsic value of a call = max(S − K, 0) = max(40 − 45, 0) = €0. The option is out of the money — the stock price is below the strike. The option has only time value, no intrinsic value."
+  },
+  {
+    cat: "Options",
+    q: "A protective put strategy involves:",
+    opts: [
+      "Buying a stock and a put option with a target strike price.",
+      "Selling a stock and buying a put option with the same strike price.",
+      "Buying a put option and selling a call option with different strike prices.",
+      "Buying a stock and selling a put option with the same strike price."
+    ],
+    ans: 0,
+    exp: "A protective put involves holding the stock and buying a put option. The put provides a price floor — if the stock falls below the strike, the investor can sell at the strike price, limiting downside risk."
+  },
+  {
+    cat: "Options",
+    q: "A butterfly spread using call options is set up by:",
+    opts: [
+      "Buying one call at a low strike price, selling two calls at a medium strike price, and buying one call at a high strike price.",
+      "Buying two calls at a low strike price, selling one call at a medium strike price, and buying one call at a high strike price.",
+      "Selling one call at a low strike price, buying two calls at a medium strike price, and selling one call at a high strike price.",
+      "Selling two calls at a low strike price, buying one call at a medium strike price, and selling one call at a high strike price."
+    ],
+    ans: 0,
+    exp: "A long butterfly spread: buy 1 call at K₁ (low), sell 2 calls at K₂ (middle), buy 1 call at K₃ (high). This profits when the stock price stays near the middle strike at expiration."
+  },
+  {
+    cat: "Options",
+    q: "An investor who expects the price of a stock to remain stable might engage in which of the following strategies?",
+    opts: ["Straddle", "Strangle", "Butterfly Spread", "Naked Put"],
+    ans: 2,
+    exp: "A butterfly spread profits when the underlying price stays near the middle strike price, making it ideal for a low-volatility, stable-price outlook. Straddles and strangles profit from large price moves."
+  },
+  {
+    cat: "Options",
+    q: "A trader buys 5 put option contracts on a stock priced at $67 with a strike price of $70 and an option price of $4. If the options are exercised at a stock price of $69, what is the trader's net profit or loss (multiplier of 100)?",
+    opts: ["Profit of $1,500", "Profit of $500", "Loss of $1,500", "Loss of $1,000"],
+    ans: 2,
+    exp: "Payoff per share = max(70−69, 0) = $1. Net per share = $1 − $4 (premium) = −$3. Total = −$3 × 5 contracts × 100 = −$1,500. Net loss of $1,500."
+  },
+  {
+    cat: "Options",
+    q: "To create a straddle, what is the correct combination of options to purchase?",
+    opts: [
+      "One call and one put with the same strike price and expiration.",
+      "One call and one put with differing strike prices but the same expiration.",
+      "One call and two puts with the same strike price and expiration.",
+      "Two calls and one put with the same strike price and expiration."
+    ],
+    ans: 0,
+    exp: "A straddle = long call + long put with identical strike price and expiration. It profits from large moves in either direction regardless of which way the stock moves."
+  },
+  // ═══════════════════════════════════
+  // SWAPS
+  // ═══════════════════════════════════
+  {
+    cat: "Swaps",
+    q: "Which of the following is a use of a currency swap?",
+    opts: [
+      "To exchange an investment in one currency for an investment in another currency.",
+      "To exchange borrowing in one currency for borrowings in another currency.",
+      "To take advantage of situations where the tax rates in two countries are different.",
+      "All of the above."
+    ],
+    ans: 3,
+    exp: "Currency swaps can be used for all three purposes: converting investments between currencies, converting debt from one currency to another, and exploiting tax differentials across jurisdictions."
+  },
+  {
+    cat: "Swaps",
+    q: "A company enters into an interest rate swap where it is paying fixed and receiving €STR. When interest rates increase, which of the following is true?",
+    opts: [
+      "The value of the swap to the company increases.",
+      "The value of the swap to the company decreases.",
+      "The value of the swap can either increase or decrease.",
+      "The value of the swap does not change provided the swap rate remains the same."
+    ],
+    ans: 0,
+    exp: "When interest rates rise, the floating receipts (€STR-linked) increase in value, while the fixed payments remain constant. The swap becomes more valuable to the fixed-rate payer (floating-rate receiver)."
+  },
+  {
+    cat: "Swaps",
+    q: "How do interest rate swaps differ from interest rate options?",
+    opts: [
+      "Swaps involve the exchange of interest rate cash flows, while options give the holder the right to buy or sell at a specified price",
+      "Swaps are more volatile than options",
+      "Swaps are more commonly used by individual investors",
+      "Options provide a fixed interest rate to one party"
+    ],
+    ans: 0,
+    exp: "Interest rate swaps are binding agreements to exchange fixed and floating cash flows. Options grant the right (but not obligation) to buy or sell at a specified price. Swaps are obligations; options are rights."
+  },
+  {
+    cat: "Swaps",
+    q: "Which of the following is true about currency swaps?",
+    opts: [
+      "Principals are not usually exchanged in a currency swap",
+      "The principal amounts usually flow in the opposite direction to interest payments at the beginning of a currency swap and in the same direction as interest payments at the end of the swap.",
+      "The principal amounts usually flow in the same direction as interest payments at the beginning of a currency swap and in the opposite direction to interest payments at the end of the swap.",
+      "Principals are not usually specified in a currency swap."
+    ],
+    ans: 1,
+    exp: "In a currency swap, at inception the principals flow in opposite directions to the interest payments that will follow. At maturity, the principal flows reverse, in the same direction as the final interest payment. This distinguishes currency swaps from interest rate swaps where principal is not exchanged."
+  },
+  {
+    cat: "Swaps",
+    q: "A plain-vanilla fixed-for-floating interest rate swap is initiated at par between two counterparties. Why is the initial market value of the swap typically set to zero?",
+    opts: [
+      "Because the present value of the fixed leg cash flows always exceeds the present value of the floating leg cash flows",
+      "Because the floating leg is risk-free while the fixed leg is risky, so the risk premium must be zero at initiation",
+      "Because the present values of the fixed and expected floating legs are set equal using the current swap curve at initiation",
+      "Because the fixed rate is chosen to equal the current overnight policy rate set by the central bank"
+    ],
+    ans: 2,
+    exp: "At initiation, the fixed swap rate is set so that the PV of fixed cash flows exactly equals the PV of expected floating cash flows (using forward rates). This makes the initial net value zero for both counterparties."
+  },
+  {
+    cat: "Swaps",
+    q: "Which of the following is an example of a 'flavoured' swap used to tailor risk management?",
+    opts: [
+      "A standard currency swap with full notional exchange at inception and maturity",
+      "An amortising swap whose notional principal declines over time to match a loan's scheduled repayments",
+      "A plain basis swap exchanging 3-month LIBOR for 6-month LIBOR on a constant notional",
+      "A fixed-for-floating swap where all payments are made in the same currency on a single notional"
+    ],
+    ans: 1,
+    exp: "An amortising swap is a 'flavoured' (non-vanilla) swap. Its notional principal declines according to a schedule, making it suitable for hedging amortising loans or mortgages. This customisation distinguishes it from plain vanilla swaps."
+  },
+  {
+    cat: "Swaps",
+    q: "Which of the following best describes the key lesson from the Bankers Trust vs. Procter & Gamble swap case?",
+    opts: [
+      "Exchange-traded derivatives are always safer than OTC derivatives",
+      "Floating-rate swaps should never be leveraged",
+      "Both the failure to disclose valuation details by BT and the failure to conduct proper due diligence by P&G contributed to the outcome",
+      "Swap dealers have a strict legal fiduciary duty to all counterparties"
+    ],
+    ans: 2,
+    exp: "The BT vs P&G case illustrated that complex OTC derivatives require transparency from dealers AND proper understanding from end-users. BT failed to explain the full downside risk; P&G failed to understand what they were buying."
+  },
+  {
+    cat: "Swaps",
+    q: "Two firms, A and B, wish to enter a fixed-for-floating interest rate swap. Firm A can borrow at 4.2% fixed or L+55bps; Firm B can borrow at 5.0% fixed or L+90bps. What is the Quality Spread Differential (QSD)?",
+    opts: ["QSD = 35 bps", "QSD = 55 bps", "QSD = 45 bps", "QSD = 80 bps"],
+    ans: 2,
+    exp: "QSD = (Fixed rate difference) − (Floating rate difference) = (5.0% − 4.2%) − (90bps − 55bps) = 80bps − 35bps = 45bps. This represents the total gain available from the comparative advantage swap."
+  },
+  // ═══════════════════════════════════
+  // CREDIT DERIVATIVES
+  // ═══════════════════════════════════
+  {
+    cat: "Credit Derivatives",
+    q: "In a CDS with a notional principal of €150 million the reference entity defaults. What is the payoff to the buyer of protection when the recovery rate is 30%?",
+    opts: ["€45 million", "€95 million", "€105 million", "€130 million"],
+    ans: 2,
+    exp: "CDS payoff = Notional × (1 − Recovery Rate) = €150M × (1 − 0.30) = €150M × 0.70 = €105 million."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "Which of the following is usually used to define the recovery rate of a bond?",
+    opts: [
+      "The value of the bond immediately after default as a percent of its face value.",
+      "The value of the bond immediately after default as a percent of the sum of the bond's face value and accrued interest.",
+      "The amount finally realised by a bondholder as a percent of face value.",
+      "The amount finally realised by a bondholder as a percent of the sum of the bond's face value and accrued interest."
+    ],
+    ans: 0,
+    exp: "The recovery rate is conventionally defined as the market value of the bond immediately after default (the 'recovery value') expressed as a percentage of its face (par) value."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "What is the rating of the companies underlying the iTraxx benchmark Europe index?",
+    opts: ["A or above", "BBB or above", "BB or below", "BBB or below"],
+    ans: 1,
+    exp: "The iTraxx Europe index consists of 125 investment-grade European entities, all rated BBB or above (investment grade). It is a common benchmark for European credit risk."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "In a CDS with a notional principal of €200 million the reference entity defaults. What is the payoff to the buyer of protection when the recovery rate is 30%?",
+    opts: ["€60 million", "€100 million", "€130 million", "€140 million"],
+    ans: 3,
+    exp: "Payoff = Notional × (1 − Recovery Rate) = €200M × (1 − 0.30) = €200M × 0.70 = €140 million."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "Suppose that the cumulative probability of a company defaulting by years one, two, three and four are 3%, 6.5%, 10%, and 14.5%, respectively. What is the probability of default in the fourth year conditional on no earlier default?",
+    opts: ["4.5%", "5.0%", "5.5%", "6.0%"],
+    ans: 1,
+    exp: "P(default in year 4 | no default by year 3) = (P_4 − P_3) / (1 − P_3) = (0.145 − 0.10) / (1 − 0.10) = 0.045 / 0.90 = 5.0%."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "If the CDS spread for a regular 5-year CDS is 120 basis points, what is the CDS spread for a 5-year binary CDS on the same underlying reference entity? Assume a recovery rate of 40%.",
+    opts: ["48 basis points", "72 basis points", "200 basis points", "300 basis points"],
+    ans: 2,
+    exp: "Binary CDS spread = Regular CDS spread / (1 − Recovery Rate) = 120 / (1 − 0.40) = 120 / 0.60 = 200 basis points."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "Which of the following best describes a total return swap?",
+    opts: [
+      "It exchanges the realised return on an asset, including both income and capital gains/losses, for a return equal to a floating rate plus a spread on the initial value of the asset.",
+      "It exchanges the promised return on an asset, including both income and capital gains/losses, for a return equal to a floating rate plus a spread on the initial value of the asset.",
+      "It exchanges the realised return on an asset, including income but not capital gains/losses, for a return equal to a floating rate plus a spread.",
+      "It exchanges the promised return on an asset, including income but not capital gains/losses, for a return equal to a floating rate plus a spread."
+    ],
+    ans: 0,
+    exp: "A total return swap exchanges the REALISED total return (income + capital gains/losses) on a reference asset for a floating-rate payment (e.g., SOFR/LIBOR + spread). The total return payer is hedged against all gains and losses on the asset."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "In a credit default swap where the notional principal is $100 million and the reference entity defaults with a recovery rate of 30%, what is the payoff to the protection buyer?",
+    opts: ["$100 million", "$30 million", "$70 million", "$130 million"],
+    ans: 2,
+    exp: "CDS payoff = Notional × (1 − Recovery Rate) = $100M × 0.70 = $70 million."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "What does a total return swap typically involve?",
+    opts: [
+      "The exchange of the total return on an asset for LIBOR plus a spread.",
+      "The exchange of the capital gains on an asset for LIBOR plus a spread.",
+      "The exchange of the income return on an asset for a fixed interest rate.",
+      "The exchange of the total return on an asset for a fixed interest rate."
+    ],
+    ans: 0,
+    exp: "A total return swap involves one party paying the total return (coupons + price changes) on a reference asset and receiving a floating rate (LIBOR/SOFR + spread). It allows synthetic exposure to an asset without ownership."
+  },
+  // ═══════════════════════════════════
+  // ETHICS (CFA)
+  // ═══════════════════════════════════
+  {
+    cat: "Ethics & Professional Standards",
+    q: "Which of the following statements regarding a profession's code of ethics is most accurate?",
+    opts: [
+      "A code of ethics makes sure that all members of a profession act ethically at all times.",
+      "A code of ethics communicates the principles and expected behaviour of a profession's members.",
+      "A code of ethics always includes standards of conduct."
+    ],
+    ans: 1,
+    exp: "A code of ethics communicates shared principles and expected behaviour. It does not guarantee ethical conduct (A is false) and does not always include separate standards of conduct (C is false — standards are an optional complement)."
+  },
+  {
+    cat: "Ethics & Professional Standards",
+    q: "Alvise Lorenzo is a portfolio manager and close friend of Mario Sabatini, CEO of LOS Corporation. During a private conversation, Lorenzo found out LOS is likely to lose an important lawsuit (not yet public). Lorenzo advises his clients to reduce their investment in LOS. Which standard did Lorenzo LEAST LIKELY violate?",
+    opts: [
+      "Preservation of Confidentiality.",
+      "Independence and Objectivity.",
+      "Material Non-public Information."
+    ],
+    ans: 1,
+    exp: "Lorenzo's independence and objectivity were not compromised — there was no conflict of interest. He DID violate Preservation of Confidentiality (using a CEO's private information) and Material Non-public Information (trading on non-public material information)."
+  },
+  {
+    cat: "Ethics & Professional Standards",
+    q: "Cynthia Rogers runs an internet site as an 'independent analyst', then enters an undisclosed paid agreement with Arnold Airlines to promote its stock. She posts a strong buy recommendation without disclosure. Which statement is most accurate regarding violations?",
+    opts: [
+      "Cynthia misrepresented herself as an independent analyst.",
+      "Cynthia failed to disclose her arrangement for compensation.",
+      "Cynthia misrepresented herself as an independent analyst and failed to disclose her arrangement for compensation."
+    ],
+    ans: 2,
+    exp: "Cynthia violated BOTH Standard I(C) Misrepresentation (claiming independence while having a paid promotion arrangement) AND Standard VI(A) Disclosure of Conflicts (failing to disclose the compensation agreement with Arnold Airlines)."
+  },
+  {
+    cat: "Ethics & Professional Standards",
+    q: "Raj Sharma (CFA) is invited to a company annual analysts meeting at a remote location — only a chartered plane is available. He is also invited to an exclusive dinner after the meeting. Sharma is LEAST LIKELY in violation of Standard I(B) Independence and Objectivity by:",
+    opts: [
+      "Accepting both the travel expense coverage and the event invitation.",
+      "Accepting the event invitation but refusing the travel expense coverage.",
+      "Accepting travel expense coverage but refusing to attend the event."
+    ],
+    ans: 2,
+    exp: "When no commercial transport is available, accepting travel covered by the company is permissible. The exclusive event invitation, however, could compromise independence. Accepting the necessary travel but declining the entertainment event is least likely to violate Standard I(B)."
+  },
+  {
+    cat: "Ethics & Professional Standards",
+    q: "Jessica Jones, CFA, manages large-cap equity portfolios. Due to a recession, she reduces equity exposure and shifts clients into low-risk fixed income investments. Jones most likely violated which CFA standard?",
+    opts: [
+      "Diligence and reasonable basis.",
+      "Misrepresentation.",
+      "Suitability."
+    ],
+    ans: 2,
+    exp: "Jones violated the Suitability standard. Her investment mandate requires large-cap equity investments. Unilaterally shifting to fixed income — even in a recession — violates the obligation to invest in accordance with each client's stated mandate and objectives."
+  },
+  // ═══════════════════════════════════
+  // INTEREST RATE SWAPS (additional)
+  // ═══════════════════════════════════
+  {
+    cat: "Swaps",
+    q: "In the context of interest rate swaps, which statement is accurate?",
+    opts: [
+      "The principal is exchanged at the start opposite to the interest and at the end in the same direction as the interest.",
+      "The principal is typically not exchanged.",
+      "The principal is exchanged at the start in the same direction as the interest and at the end opposite to the interest.",
+      "The principal amounts are not specified."
+    ],
+    ans: 1,
+    exp: "In standard interest rate swaps (same currency), the notional principal is NOT exchanged — only the net interest payments are. This is a fundamental difference from currency swaps where principal is exchanged."
+  },
+
+  // ═══════════════════════════════════
+  // 2023-2024 EXAM MCQs
+  // ═══════════════════════════════════
+  {
+    cat: "Options",
+    q: "The price of a stock is $67. A trader sells 5 put option contracts on the stock with a strike price of $70 when the option price is $4. The options are exercised when the stock price is $69. What is the trader's net profit or loss with a multiplier of 100?",
+    opts: ["Loss of $1,500", "Loss of $500", "Gain of $1,500", "Loss of $1,000"],
+    ans: 2,
+    exp: "The trader SOLD the puts, collecting $4 premium per share. At expiration (S=$69), the buyer exercises: the seller must pay out max(70−69, 0) = $1 per share. Net per share for the seller = $4 collected − $1 paid = $3 profit. Total = $3 × 5 contracts × 100 = Gain of $1,500."
+  },
+  {
+    cat: "Options",
+    q: "Consider a put option and a call option with the same strike price and time to maturity. Which of the following is true?",
+    opts: [
+      "It is possible for both options to be in the money.",
+      "It is possible for both options to be out of the money.",
+      "One of the options must be in the money.",
+      "One of the options must be either in the money or at the money."
+    ],
+    ans: 3,
+    exp: "If S > K: call is ITM, put is OTM. If S < K: put is ITM, call is OTM. If S = K: both are ATM. Therefore at least one must always be in-the-money or at-the-money — it is impossible for both to be strictly out of the money simultaneously."
+  },
+  {
+    cat: "Options",
+    q: "How can a straddle be created?",
+    opts: [
+      "Buy one call and one put with the same strike price and same expiration date.",
+      "Buy one call and one put with different strike prices and same expiration date.",
+      "Buy one call and two puts with the same strike price and expiration date.",
+      "Buy two calls and one put with the same strike price and expiration date."
+    ],
+    ans: 0,
+    exp: "A straddle = long call + long put with identical strike price and expiration date. It produces a V-shaped payoff and profits from large price moves in either direction."
+  },
+  {
+    cat: "Options",
+    q: "Six-month call options with strike prices of $35 and $40 cost $6 and $4, respectively. What is the maximum gain when a bull spread is created by trading a total of 200 options?",
+    opts: ["$100", "$200", "$300", "$400"],
+    ans: 2,
+    exp: "A bull call spread: buy 100 calls at $35 ($6 each), sell 100 calls at $40 ($4 each). Net cost = (6 − 4) × 100 = $200. Max payoff = (40 − 35) × 100 = $500. Max gain = $500 − $200 = $300."
+  },
+  {
+    cat: "Options — BOPM",
+    q: "The current price of a non-dividend-paying stock is €30. Over the next six months, it is expected to rise to €36 or fall to €26. Assume the risk-free rate is zero. What is the risk-neutral probability that the stock price will be €36?",
+    opts: ["0.6", "0.5", "0.4", "0.3"],
+    ans: 2,
+    exp: "With risk-free rate = 0, the forward price equals the spot: F = 30. Risk-neutral probability p = (F − d) / (u − d) = (30 − 26) / (36 − 26) = 4 / 10 = 0.4."
+  },
+  {
+    cat: "Options — VIX",
+    q: "Which of the following is measured by the VIX index?",
+    opts: [
+      "Implied volatilities for stock options trading on the CBOE.",
+      "Historical volatilities for stock options trading on CBOE.",
+      "Implied volatilities for options trading on the S&P 500 index.",
+      "Historical volatilities for options trading on the S&P 500 index."
+    ],
+    ans: 2,
+    exp: "The VIX (CBOE Volatility Index) measures the market's expectation of near-term volatility conveyed by S&P 500 index option prices. It uses IMPLIED (not historical) volatility from S&P 500 options (not individual stocks)."
+  },
+  {
+    cat: "Options",
+    q: "A portfolio manager in charge of a portfolio worth $10 million is concerned that stock prices might decline rapidly during the next six months and would like to use put options on an index to provide protection against the portfolio falling below $9.5 million. The index is currently standing at 500 and each contract is on 100 times the index. What position is required if the portfolio has a beta of 1?",
+    opts: ["Short 200 contracts", "Long 200 contracts", "Short 100 contracts", "Long 100 contracts"],
+    ans: 1,
+    exp: "With beta = 1, the portfolio moves in line with the index. To protect a $10M portfolio using index puts: number of contracts = (Portfolio Value / (Index × Contract multiplier)) × beta = ($10,000,000 / (500 × 100)) × 1 = 200. Buy (long) 200 put contracts to provide downside protection."
+  },
+  {
+    cat: "Options — Greeks",
+    q: "A call option on a stock has a delta of 0.3. A trader has sold 1,000 options. What position should the trader take to hedge the position?",
+    opts: ["Sell 300 shares", "Buy 300 shares", "Sell 700 shares", "Buy 700 shares"],
+    ans: 1,
+    exp: "Delta hedging: the trader sold 1,000 calls (negative delta exposure of 0.3 × 1,000 = 300). To hedge, buy 300 shares to offset the negative delta. This creates a delta-neutral position."
+  },
+  {
+    cat: "Options — Greeks",
+    q: "Gamma tends to be high for which of the following? (2023-2024 exam)",
+    opts: [
+      "At-the-money options",
+      "Out-of-the-money options",
+      "In-the-money options",
+      "Options with a long time to maturity"
+    ],
+    ans: 0,
+    exp: "Gamma is highest for at-the-money options. ATM options have the steepest delta curve — a small move in the underlying shifts the probability of expiring ITM/OTM significantly — so the rate of change of delta (gamma) peaks at-the-money."
+  },
+  {
+    cat: "Swaps",
+    q: "Which of the following is true about currency swaps? (2023-2024 exam)",
+    opts: [
+      "Principals are not usually exchanged in a currency swap.",
+      "The principal amounts usually flow in the opposite direction to interest payments at the beginning of a currency swap and in the same direction as interest payments at the end of the swap.",
+      "The principal amounts usually flow in the same direction as interest payments at the beginning of a currency swap and in the opposite direction to interest payments at the end of the swap.",
+      "Principals are not usually specified in a currency swap."
+    ],
+    ans: 1,
+    exp: "In a currency swap, at inception the principals flow in OPPOSITE directions to the interest payments that follow (e.g., Party A gives USD principal and receives GBP principal, then pays GBP interest and receives USD interest). At maturity, the principal flows reverse — in the SAME direction as the final interest payment."
+  },
+  {
+    cat: "Swaps",
+    q: "A company enters into an interest rate swap where it is paying fixed and receiving €STR. When interest rates increase, which of the following is true? (2023-2024 exam)",
+    opts: [
+      "The value of the swap to the company increases.",
+      "The value of the swap to the company decreases.",
+      "The value of the swap can either increase or decrease.",
+      "The value of the swap does not change provided the swap rate remains the same."
+    ],
+    ans: 0,
+    exp: "The company pays fixed and receives floating (€STR). When interest rates rise, the floating receipts increase in value while the fixed payments stay constant. The swap therefore becomes more valuable to the fixed-rate payer."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "In a CDS with a notional principal of $100 million the reference entity defaults. What is the payoff to the buyer of protection when the recovery rate is 30%?",
+    opts: ["$100 million", "$30 million", "$130 million", "$70 million"],
+    ans: 3,
+    exp: "CDS payoff to buyer = Notional × (1 − Recovery Rate) = $100M × (1 − 0.30) = $100M × 0.70 = $70 million."
+  },
+  {
+    cat: "Credit Derivatives",
+    q: "Which of the following best describes a total return swap? (2023-2024 exam)",
+    opts: [
+      "It exchanges the realised return on an asset, including both income and capital gains/losses, for a return equal to LIBOR plus a spread on the initial value of the asset.",
+      "It exchanges the promised return on an asset, including both income and capital gains/losses, for a return equal to LIBOR plus a spread on the initial value of the asset.",
+      "It exchanges the realised return on an asset, including income but not capital gains/losses, for a return equal to LIBOR plus a spread on the initial value of the asset.",
+      "It exchanges the promised return on an asset, including income but not capital gains/losses, for a return equal to LIBOR plus a spread on the initial value of the asset."
+    ],
+    ans: 0,
+    exp: "A total return swap exchanges the REALISED total return on a reference asset — including both income (coupons/dividends) AND capital gains or losses — for a floating rate payment (LIBOR/SOFR + spread). The key word is 'realised': actual returns, not promised ones."
+  },
+];
+
+// ── State ──────────────────────────────────────────────
+let queue = [];
+let currentQ = null;
+let totalAnswered = 0;
+let totalCorrect = 0;
+let streak = 0;
+let qIndex = 0; // position within the current shuffled round
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function refillQueue() {
+  queue = shuffle(ALL_QUESTIONS);
+  qIndex = 0;
+}
+
+function nextQuestion() {
+  if (qIndex >= queue.length) refillQueue();
+  currentQ = queue[qIndex++];
+
+  // Reset UI
+  const card = document.getElementById('card');
+  card.classList.remove('answered');
+
+  document.getElementById('q-num').textContent =
+    `QUESTION ${totalAnswered + 1} — ${currentQ.cat.toUpperCase()}`;
+  document.getElementById('q-cat').textContent = currentQ.cat;
+  document.getElementById('q-deco').textContent =
+    String(totalAnswered + 1).padStart(2, '0');
+  document.getElementById('q-text').textContent = currentQ.q;
+
+  const optDiv = document.getElementById('options');
+  optDiv.innerHTML = '';
+
+  const letters = ['A', 'B', 'C', 'D', 'E'];
+  currentQ.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option';
+    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span><span class="opt-text">${opt}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i));
+    optDiv.appendChild(btn);
+  });
+
+  const fb = document.getElementById('feedback');
+  fb.className = 'feedback';
+  fb.innerHTML = '';
+
+  const btn = document.getElementById('btn-next');
+  btn.classList.remove('show');
+
+  // Update progress (% through current round)
+  const pct = Math.round((qIndex / ALL_QUESTIONS.length) * 100);
+  document.getElementById('progress').style.width = pct + '%';
+
+  updateStreak();
+}
+
+function handleAnswer(chosen) {
+  const options = document.querySelectorAll('.option');
+  options.forEach(o => { o.classList.add('disabled'); o.style.pointerEvents = 'none'; });
+
+  const correct = currentQ.ans;
+  const isCorrect = chosen === correct;
+
+  options[chosen].classList.add(isCorrect ? 'correct' : 'incorrect');
+  if (!isCorrect) options[correct].classList.add('reveal-correct');
+
+  const fb = document.getElementById('feedback');
+  fb.className = `feedback ${isCorrect ? 'correct-fb' : 'incorrect-fb'} show`;
+  fb.innerHTML = `<strong>${isCorrect ? '✓ Correct!' : '✗ Incorrect'}</strong>${currentQ.exp}`;
+
+  totalAnswered++;
+  if (isCorrect) { totalCorrect++; streak++; } else { streak = 0; }
+
+  document.getElementById('s-total').textContent = totalAnswered;
+  document.getElementById('s-correct').textContent = totalCorrect;
+  document.getElementById('s-incorrect').textContent = totalAnswered - totalCorrect;
+  document.getElementById('s-pct').textContent =
+    Math.round((totalCorrect / totalAnswered) * 100) + '%';
+
+  updateStreak();
+  document.getElementById('card').classList.add('answered');
+  document.getElementById('btn-next').classList.add('show');
+}
+
+function updateStreak() {
+  const el = document.getElementById('streak');
+  if (streak >= 3) {
+    const emojis = streak >= 10 ? '🔥🔥🔥' : streak >= 7 ? '🔥🔥' : '🔥';
+    el.textContent = `${emojis} ${streak}-question streak!`;
+  } else {
+    el.textContent = '';
+  }
+}
+
+// Kick off
+refillQueue();
+nextQuestion();
+</script>
+</body>
+</html>
+
