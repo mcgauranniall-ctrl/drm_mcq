@@ -1096,7 +1096,7 @@ const ALL_QUESTIONS = [
   },
   {
     cat: "Credit Derivatives",
-    q: "In a CDS with a notional principal of €200 million the reference entity defaults. What is the payoff to the buyer of protection when the recovery rate is 30%?",
+    q: "In a CDS with a notional principal of ���200 million the reference entity defaults. What is the payoff to the buyer of protection when the recovery rate is 30%?",
     opts: ["€60 million", "€100 million", "€130 million", "€140 million"],
     ans: 3,
     exp: "Payoff = Notional × (1 − Recovery Rate) = €200M × (1 − 0.30) = €200M × 0.70 = €140 million."
@@ -1456,6 +1456,13 @@ function updateStreak() {
 refillQueue();
 nextQuestion();
 </script>
+
+<!-- Vercel Web Analytics -->
+<script>
+  window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+</script>
+<script defer src="/_vercel/insights/script.js"></script>
+
 </body>
 </html>
 
