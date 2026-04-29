@@ -910,9 +910,9 @@ const ALL_QUESTIONS = [
   {
     cat: "Options",
     q: "A put option has a strike price of €20, and the stock is currently trading at €18. If the risk-free rate is 2% annually and the option expires in one year, what is the minimum value of the put option?",
-    opts: ["0.50", "1.00", "2.00", "2.36"],
-    ans: 3,
-    exp: "Lower bound for a European put: max(Ke^(−rT) − S, 0) = max(20·e^(−0.02) − 18, 0) = max(19.60 − 18, 0) = max(1.60, 0) ≈ 1.60. Wait — the given answer D is 2.36. Using K−S=2 as intrinsic value for an American put: max(K−S,0) = 20−18 = €2. The European lower bound = 20e^(-0.02) - 18 ≈ 1.60. The answer listed is D (2.36) which may reflect a different setup — intrinsic value = max(20−18,0) = €2 is the American put lower bound."
+    opts: ["1.60", "1.00", "2.00", "2.36"],
+    ans: 1,
+    exp: "Lower bound for a European put: max(Ke^(−rT) − S, 0) = max(20·e^(−0.02) − 18, 0) = max(19.60 − 18, 0) = max(1.60, 0) ≈ 1.60."
   },
   {
     cat: "Options",
