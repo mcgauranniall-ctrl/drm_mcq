@@ -507,7 +507,7 @@ const ALL_QUESTIONS = [
     cat: "Futures & Hedging",
     q: "The spot price of an investment asset that provides no income is €30 and the risk-free rate for all maturities (with continuous compounding) is 10%. What is the three-year forward price?",
     opts: ["40.50", "22.22", "33.00", "33.16"],
-    ans: 1,
+    ans: 0,
     exp: "F = S·e^(rT) = 30·e^(0.10×3) = 30·e^0.30 = 30 × 1.3499 ≈ 40.50. The answer is A. (Note: D 33.16 would be for T=1 at 10%: 30e^0.1=33.16.)"
   },
   {
@@ -911,7 +911,7 @@ const ALL_QUESTIONS = [
     cat: "Options",
     q: "A put option has a strike price of €20, and the stock is currently trading at €18. If the risk-free rate is 2% annually and the option expires in one year, what is the minimum value of the put option?",
     opts: ["1.60", "1.00", "2.00", "2.36"],
-    ans: 1,
+    ans: 0,
     exp: "Lower bound for a European put: max(Ke^(−rT) − S, 0) = max(20·e^(−0.02) − 18, 0) = max(19.60 − 18, 0) = max(1.60, 0) ≈ 1.60."
   },
   {
