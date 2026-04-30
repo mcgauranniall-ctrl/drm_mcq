@@ -33,7 +33,6 @@
     align-items: center;
   }
 
-  /* noise overlay */
   body::before {
     content: '';
     position: fixed;
@@ -90,6 +89,7 @@
     border-radius: 12px;
     font-family: 'DM Mono', monospace;
     font-size: 0.8rem;
+    flex-wrap: wrap;
   }
 
   .score-item { text-align: center; }
@@ -97,7 +97,36 @@
   .score-num.correct { color: var(--green); }
   .score-num.incorrect { color: var(--red); }
   .score-num.total { color: var(--accent); }
+  .score-num.best-streak { color: var(--gold); }
   .score-label { color: var(--muted); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; }
+
+  /* Best streak separator */
+  .scorebar-divider {
+    width: 1px;
+    background: var(--border);
+    align-self: stretch;
+    margin: 0 0.5rem;
+  }
+
+  /* Best streak item — subtle highlight */
+  .score-item.best-item {
+    position: relative;
+    padding: 0.35rem 0.75rem;
+    background: linear-gradient(135deg, rgba(217,119,6,0.07), rgba(217,119,6,0.03));
+    border: 1px solid rgba(217,119,6,0.25);
+    border-radius: 8px;
+  }
+
+  /* New-record flash animation */
+  @keyframes newRecord {
+    0%   { box-shadow: 0 0 0 0 rgba(217,119,6,0.5); }
+    50%  { box-shadow: 0 0 0 8px rgba(217,119,6,0); }
+    100% { box-shadow: 0 0 0 0 rgba(217,119,6,0); }
+  }
+
+  .score-item.best-item.flash {
+    animation: newRecord 0.7s ease-out;
+  }
 
   /* Category badge */
   .category-tag {
@@ -279,7 +308,7 @@
 
   /* Next button */
   .btn-next {
-    display: block;
+    display: none;
     width: 100%;
     padding: 1rem;
     border-radius: 12px;
@@ -292,7 +321,6 @@
     cursor: pointer;
     transition: all 0.2s;
     letter-spacing: 0.02em;
-    display: none;
   }
 
   .btn-next:hover {
@@ -310,6 +338,24 @@
     color: var(--gold);
     margin-bottom: 1rem;
     min-height: 1.2rem;
+  }
+
+  /* New record banner */
+  .new-record-banner {
+    text-align: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--gold);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    min-height: 1rem;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  .new-record-banner.show {
+    opacity: 1;
   }
 
   /* Q counter decoration */
@@ -336,11 +382,17 @@
     <div class="score-item"><span class="score-num correct" id="s-correct">0</span><span class="score-label">Correct</span></div>
     <div class="score-item"><span class="score-num incorrect" id="s-incorrect">0</span><span class="score-label">Incorrect</span></div>
     <div class="score-item"><span class="score-num total" id="s-pct">—</span><span class="score-label">Score %</span></div>
+    <div class="scorebar-divider"></div>
+    <div class="score-item best-item" id="best-streak-item" title="Your all-time best streak, saved across sessions">
+      <span class="score-num best-streak" id="s-best-streak">—</span>
+      <span class="score-label">🏆 Best Streak</span>
+    </div>
   </div>
   <div class="progress-bar"><div class="progress-fill" id="progress" style="width:0%"></div></div>
 </header>
 
 <main>
+  <div class="new-record-banner" id="new-record-banner">★ New best streak! ★</div>
   <div class="streak" id="streak"></div>
   <div class="card" id="card">
     <div class="q-counter-deco" id="q-deco">01</div>
@@ -508,7 +560,7 @@ const ALL_QUESTIONS = [
     q: "The spot price of an investment asset that provides no income is €30 and the risk-free rate for all maturities (with continuous compounding) is 10%. What is the three-year forward price?",
     opts: ["40.50", "22.22", "33.00", "33.16"],
     ans: 0,
-    exp: "F = S·e^(rT) = 30·e^(0.10×3) = 30·e^0.30 = 30 × 1.3499 ≈ 40.50. The answer is A. (Note: D 33.16 would be for T=1 at 10%: 30e^0.1=33.16.)"
+    exp: "F = S·e^(rT) = 30·e^(0.10×3) = 30·e^0.30 = 30 × 1.3499 ≈ 40.50."
   },
   {
     cat: "Futures & Hedging",
@@ -577,7 +629,7 @@ const ALL_QUESTIONS = [
       "Forwards can be customized, while futures cannot"
     ],
     ans: 1,
-    exp: "Futures are exchange-traded and require margin deposits. Forwards are OTC customised contracts that typically do not require margin. Both futures and forwards can be customised to varying degrees."
+    exp: "Futures are exchange-traded and require margin deposits. Forwards are OTC customised contracts that typically do not require margin."
   },
   // ═══════════════════════════════════
   // OPTIONS
@@ -673,7 +725,7 @@ const ALL_QUESTIONS = [
       "None of the above."
     ],
     ans: 3,
-    exp: "None of the statements are true. Long calls, short calls, long puts, and short puts all have different payoff profiles. A put on a stock plus the stock approximates a call payoff (via put-call parity), but not the reverse."
+    exp: "None of the statements are true. Long calls, short calls, long puts, and short puts all have different payoff profiles."
   },
   {
     cat: "Options",
@@ -745,7 +797,7 @@ const ALL_QUESTIONS = [
       "Buy a low strike price put and sell a high strike price call."
     ],
     ans: 1,
-    exp: "A bear call spread is created by buying a high strike call and selling a low strike call. This creates a net credit and profits when the asset price falls. (Contrast with a bull call spread which buys low / sells high.)"
+    exp: "A bear call spread is created by buying a high strike call and selling a low strike call. This creates a net credit and profits when the asset price falls."
   },
   {
     cat: "Options",
@@ -905,7 +957,7 @@ const ALL_QUESTIONS = [
       "Neither American nor European options can be exercised before expiration."
     ],
     ans: 0,
-    exp: "American options give the holder the flexibility to exercise at any time on or before expiration. European options can only be exercised at expiration. This early-exercise feature makes American options worth at least as much as European options."
+    exp: "American options give the holder the flexibility to exercise at any time on or before expiration. European options can only be exercised at expiration."
   },
   {
     cat: "Options",
@@ -919,7 +971,7 @@ const ALL_QUESTIONS = [
     q: "If the current stock price is €40, the strike price of a call option is €45, and the time to expiration is 6 months, what is the intrinsic value of the call option?",
     opts: ["0", "5", "-5", "It depends on the volatility of the stock."],
     ans: 0,
-    exp: "Intrinsic value of a call = max(S − K, 0) = max(40 − 45, 0) = €0. The option is out of the money — the stock price is below the strike. The option has only time value, no intrinsic value."
+    exp: "Intrinsic value of a call = max(S − K, 0) = max(40 − 45, 0) = €0. The option is out of the money — the stock price is below the strike."
   },
   {
     cat: "Options",
@@ -1020,7 +1072,7 @@ const ALL_QUESTIONS = [
       "Principals are not usually specified in a currency swap."
     ],
     ans: 1,
-    exp: "In a currency swap, at inception the principals flow in opposite directions to the interest payments that will follow. At maturity, the principal flows reverse, in the same direction as the final interest payment. This distinguishes currency swaps from interest rate swaps where principal is not exchanged."
+    exp: "In a currency swap, at inception the principals flow in opposite directions to the interest payments that will follow. At maturity, the principal flows reverse, in the same direction as the final interest payment."
   },
   {
     cat: "Swaps",
@@ -1044,7 +1096,7 @@ const ALL_QUESTIONS = [
       "A fixed-for-floating swap where all payments are made in the same currency on a single notional"
     ],
     ans: 1,
-    exp: "An amortising swap is a 'flavoured' (non-vanilla) swap. Its notional principal declines according to a schedule, making it suitable for hedging amortising loans or mortgages. This customisation distinguishes it from plain vanilla swaps."
+    exp: "An amortising swap is a 'flavoured' (non-vanilla) swap. Its notional principal declines according to a schedule, making it suitable for hedging amortising loans or mortgages."
   },
   {
     cat: "Swaps",
@@ -1056,14 +1108,14 @@ const ALL_QUESTIONS = [
       "Swap dealers have a strict legal fiduciary duty to all counterparties"
     ],
     ans: 2,
-    exp: "The BT vs P&G case illustrated that complex OTC derivatives require transparency from dealers AND proper understanding from end-users. BT failed to explain the full downside risk; P&G failed to understand what they were buying."
+    exp: "The BT vs P&G case illustrated that complex OTC derivatives require transparency from dealers AND proper understanding from end-users."
   },
   {
     cat: "Swaps",
     q: "Two firms, A and B, wish to enter a fixed-for-floating interest rate swap. Firm A can borrow at 4.2% fixed or L+55bps; Firm B can borrow at 5.0% fixed or L+90bps. What is the Quality Spread Differential (QSD)?",
     opts: ["QSD = 35 bps", "QSD = 55 bps", "QSD = 45 bps", "QSD = 80 bps"],
     ans: 2,
-    exp: "QSD = (Fixed rate difference) − (Floating rate difference) = (5.0% − 4.2%) − (90bps − 55bps) = 80bps − 35bps = 45bps. This represents the total gain available from the comparative advantage swap."
+    exp: "QSD = (Fixed rate difference) − (Floating rate difference) = (5.0% − 4.2%) − (90bps − 55bps) = 80bps − 35bps = 45bps."
   },
   // ═══════════════════════════════════
   // CREDIT DERIVATIVES
@@ -1085,14 +1137,14 @@ const ALL_QUESTIONS = [
       "The amount finally realised by a bondholder as a percent of the sum of the bond's face value and accrued interest."
     ],
     ans: 0,
-    exp: "The recovery rate is conventionally defined as the market value of the bond immediately after default (the 'recovery value') expressed as a percentage of its face (par) value."
+    exp: "The recovery rate is conventionally defined as the market value of the bond immediately after default expressed as a percentage of its face (par) value."
   },
   {
     cat: "Credit Derivatives",
     q: "What is the rating of the companies underlying the iTraxx benchmark Europe index?",
     opts: ["A or above", "BBB or above", "BB or below", "BBB or below"],
     ans: 1,
-    exp: "The iTraxx Europe index consists of 125 investment-grade European entities, all rated BBB or above (investment grade). It is a common benchmark for European credit risk."
+    exp: "The iTraxx Europe index consists of 125 investment-grade European entities, all rated BBB or above (investment grade)."
   },
   {
     cat: "Credit Derivatives",
@@ -1125,7 +1177,7 @@ const ALL_QUESTIONS = [
       "It exchanges the promised return on an asset, including income but not capital gains/losses, for a return equal to a floating rate plus a spread."
     ],
     ans: 0,
-    exp: "A total return swap exchanges the REALISED total return (income + capital gains/losses) on a reference asset for a floating-rate payment (e.g., SOFR/LIBOR + spread). The total return payer is hedged against all gains and losses on the asset."
+    exp: "A total return swap exchanges the REALISED total return (income + capital gains/losses) on a reference asset for a floating-rate payment (e.g., SOFR/LIBOR + spread)."
   },
   {
     cat: "Credit Derivatives",
@@ -1144,7 +1196,7 @@ const ALL_QUESTIONS = [
       "The exchange of the total return on an asset for a fixed interest rate."
     ],
     ans: 0,
-    exp: "A total return swap involves one party paying the total return (coupons + price changes) on a reference asset and receiving a floating rate (LIBOR/SOFR + spread). It allows synthetic exposure to an asset without ownership."
+    exp: "A total return swap involves one party paying the total return (coupons + price changes) on a reference asset and receiving a floating rate (LIBOR/SOFR + spread)."
   },
   // ═══════════════════════════════════
   // ETHICS (CFA)
@@ -1158,7 +1210,7 @@ const ALL_QUESTIONS = [
       "A code of ethics always includes standards of conduct."
     ],
     ans: 1,
-    exp: "A code of ethics communicates shared principles and expected behaviour. It does not guarantee ethical conduct (A is false) and does not always include separate standards of conduct (C is false — standards are an optional complement)."
+    exp: "A code of ethics communicates shared principles and expected behaviour. It does not guarantee ethical conduct and does not always include separate standards of conduct."
   },
   {
     cat: "Ethics & Professional Standards",
@@ -1169,7 +1221,7 @@ const ALL_QUESTIONS = [
       "Material Non-public Information."
     ],
     ans: 1,
-    exp: "Lorenzo's independence and objectivity were not compromised — there was no conflict of interest. He DID violate Preservation of Confidentiality (using a CEO's private information) and Material Non-public Information (trading on non-public material information)."
+    exp: "Lorenzo's independence and objectivity were not compromised — there was no conflict of interest. He DID violate Preservation of Confidentiality and Material Non-public Information."
   },
   {
     cat: "Ethics & Professional Standards",
@@ -1180,7 +1232,7 @@ const ALL_QUESTIONS = [
       "Cynthia misrepresented herself as an independent analyst and failed to disclose her arrangement for compensation."
     ],
     ans: 2,
-    exp: "Cynthia violated BOTH Standard I(C) Misrepresentation (claiming independence while having a paid promotion arrangement) AND Standard VI(A) Disclosure of Conflicts (failing to disclose the compensation agreement with Arnold Airlines)."
+    exp: "Cynthia violated BOTH Standard I(C) Misrepresentation AND Standard VI(A) Disclosure of Conflicts."
   },
   {
     cat: "Ethics & Professional Standards",
@@ -1191,7 +1243,7 @@ const ALL_QUESTIONS = [
       "Accepting travel expense coverage but refusing to attend the event."
     ],
     ans: 2,
-    exp: "When no commercial transport is available, accepting travel covered by the company is permissible. The exclusive event invitation, however, could compromise independence. Accepting the necessary travel but declining the entertainment event is least likely to violate Standard I(B)."
+    exp: "When no commercial transport is available, accepting travel covered by the company is permissible. The exclusive event invitation could compromise independence. Accepting necessary travel but declining the entertainment is least likely to violate Standard I(B)."
   },
   {
     cat: "Ethics & Professional Standards",
@@ -1202,7 +1254,7 @@ const ALL_QUESTIONS = [
       "Suitability."
     ],
     ans: 2,
-    exp: "Jones violated the Suitability standard. Her investment mandate requires large-cap equity investments. Unilaterally shifting to fixed income — even in a recession — violates the obligation to invest in accordance with each client's stated mandate and objectives."
+    exp: "Jones violated the Suitability standard. Her investment mandate requires large-cap equity investments. Unilaterally shifting to fixed income violates the obligation to invest in accordance with each client's stated mandate."
   },
   // ═══════════════════════════════════
   // INTEREST RATE SWAPS (additional)
@@ -1217,9 +1269,8 @@ const ALL_QUESTIONS = [
       "The principal amounts are not specified."
     ],
     ans: 1,
-    exp: "In standard interest rate swaps (same currency), the notional principal is NOT exchanged — only the net interest payments are. This is a fundamental difference from currency swaps where principal is exchanged."
+    exp: "In standard interest rate swaps (same currency), the notional principal is NOT exchanged — only the net interest payments are."
   },
-
   // ═══════════════════════════════════
   // 2023-2024 EXAM MCQs
   // ═══════════════════════════════════
@@ -1228,31 +1279,7 @@ const ALL_QUESTIONS = [
     q: "The price of a stock is $67. A trader sells 5 put option contracts on the stock with a strike price of $70 when the option price is $4. The options are exercised when the stock price is $69. What is the trader's net profit or loss with a multiplier of 100?",
     opts: ["Loss of $1,500", "Loss of $500", "Gain of $1,500", "Loss of $1,000"],
     ans: 2,
-    exp: "The trader SOLD the puts, collecting $4 premium per share. At expiration (S=$69), the buyer exercises: the seller must pay out max(70−69, 0) = $1 per share. Net per share for the seller = $4 collected − $1 paid = $3 profit. Total = $3 × 5 contracts × 100 = Gain of $1,500."
-  },
-  {
-    cat: "Options",
-    q: "Consider a put option and a call option with the same strike price and time to maturity. Which of the following is true?",
-    opts: [
-      "It is possible for both options to be in the money.",
-      "It is possible for both options to be out of the money.",
-      "One of the options must be in the money.",
-      "One of the options must be either in the money or at the money."
-    ],
-    ans: 3,
-    exp: "If S > K: call is ITM, put is OTM. If S < K: put is ITM, call is OTM. If S = K: both are ATM. Therefore at least one must always be in-the-money or at-the-money — it is impossible for both to be strictly out of the money simultaneously."
-  },
-  {
-    cat: "Options",
-    q: "How can a straddle be created?",
-    opts: [
-      "Buy one call and one put with the same strike price and same expiration date.",
-      "Buy one call and one put with different strike prices and same expiration date.",
-      "Buy one call and two puts with the same strike price and expiration date.",
-      "Buy two calls and one put with the same strike price and expiration date."
-    ],
-    ans: 0,
-    exp: "A straddle = long call + long put with identical strike price and expiration date. It produces a V-shaped payoff and profits from large price moves in either direction."
+    exp: "The trader SOLD the puts, collecting $4 premium per share. At expiration (S=$69), payoff to buyer = $1/share, so seller pays $1. Net for seller = $4 − $1 = $3 per share. Total = $3 × 5 × 100 = Gain of $1,500."
   },
   {
     cat: "Options",
@@ -1266,7 +1293,7 @@ const ALL_QUESTIONS = [
     q: "The current price of a non-dividend-paying stock is €30. Over the next six months, it is expected to rise to €36 or fall to €26. Assume the risk-free rate is zero. What is the risk-neutral probability that the stock price will be €36?",
     opts: ["0.6", "0.5", "0.4", "0.3"],
     ans: 2,
-    exp: "With risk-free rate = 0, the forward price equals the spot: F = 30. Risk-neutral probability p = (F − d) / (u − d) = (30 − 26) / (36 − 26) = 4 / 10 = 0.4."
+    exp: "With risk-free rate = 0, forward price = spot = 30. Risk-neutral probability p = (F − d) / (u − d) = (30 − 26) / (36 − 26) = 4 / 10 = 0.4."
   },
   {
     cat: "Options — VIX",
@@ -1278,45 +1305,21 @@ const ALL_QUESTIONS = [
       "Historical volatilities for options trading on the S&P 500 index."
     ],
     ans: 2,
-    exp: "The VIX (CBOE Volatility Index) measures the market's expectation of near-term volatility conveyed by S&P 500 index option prices. It uses IMPLIED (not historical) volatility from S&P 500 options (not individual stocks)."
+    exp: "The VIX measures the market's expectation of near-term volatility conveyed by S&P 500 index option prices. It uses IMPLIED (not historical) volatility from S&P 500 options (not individual stocks)."
   },
   {
     cat: "Options",
     q: "A portfolio manager in charge of a portfolio worth $10 million is concerned that stock prices might decline rapidly during the next six months and would like to use put options on an index to provide protection against the portfolio falling below $9.5 million. The index is currently standing at 500 and each contract is on 100 times the index. What position is required if the portfolio has a beta of 1?",
     opts: ["Short 200 contracts", "Long 200 contracts", "Short 100 contracts", "Long 100 contracts"],
     ans: 1,
-    exp: "With beta = 1, the portfolio moves in line with the index. To protect a $10M portfolio using index puts: number of contracts = (Portfolio Value / (Index × Contract multiplier)) × beta = ($10,000,000 / (500 × 100)) × 1 = 200. Buy (long) 200 put contracts to provide downside protection."
+    exp: "With beta = 1: number of contracts = ($10,000,000 / (500 × 100)) × 1 = 200. Buy (long) 200 put contracts to provide downside protection."
   },
   {
     cat: "Options — Greeks",
     q: "A call option on a stock has a delta of 0.3. A trader has sold 1,000 options. What position should the trader take to hedge the position?",
     opts: ["Sell 300 shares", "Buy 300 shares", "Sell 700 shares", "Buy 700 shares"],
     ans: 1,
-    exp: "Delta hedging: the trader sold 1,000 calls (negative delta exposure of 0.3 × 1,000 = 300). To hedge, buy 300 shares to offset the negative delta. This creates a delta-neutral position."
-  },
-  {
-    cat: "Options — Greeks",
-    q: "Gamma tends to be high for which of the following? (2023-2024 exam)",
-    opts: [
-      "At-the-money options",
-      "Out-of-the-money options",
-      "In-the-money options",
-      "Options with a long time to maturity"
-    ],
-    ans: 0,
-    exp: "Gamma is highest for at-the-money options. ATM options have the steepest delta curve — a small move in the underlying shifts the probability of expiring ITM/OTM significantly — so the rate of change of delta (gamma) peaks at-the-money."
-  },
-  {
-    cat: "Swaps",
-    q: "Which of the following is true about currency swaps? (2023-2024 exam)",
-    opts: [
-      "Principals are not usually exchanged in a currency swap.",
-      "The principal amounts usually flow in the opposite direction to interest payments at the beginning of a currency swap and in the same direction as interest payments at the end of the swap.",
-      "The principal amounts usually flow in the same direction as interest payments at the beginning of a currency swap and in the opposite direction to interest payments at the end of the swap.",
-      "Principals are not usually specified in a currency swap."
-    ],
-    ans: 1,
-    exp: "In a currency swap, at inception the principals flow in OPPOSITE directions to the interest payments that follow (e.g., Party A gives USD principal and receives GBP principal, then pays GBP interest and receives USD interest). At maturity, the principal flows reverse — in the SAME direction as the final interest payment."
+    exp: "Delta hedging: sold 1,000 calls (negative delta exposure of 300). To hedge, buy 300 shares. This creates a delta-neutral position."
   },
   {
     cat: "Swaps",
@@ -1328,7 +1331,7 @@ const ALL_QUESTIONS = [
       "The value of the swap does not change provided the swap rate remains the same."
     ],
     ans: 0,
-    exp: "The company pays fixed and receives floating (€STR). When interest rates rise, the floating receipts increase in value while the fixed payments stay constant. The swap therefore becomes more valuable to the fixed-rate payer."
+    exp: "The company pays fixed and receives floating (€STR). When interest rates rise, floating receipts increase while fixed payments stay constant. The swap becomes more valuable to the fixed-rate payer."
   },
   {
     cat: "Credit Derivatives",
@@ -1347,9 +1350,27 @@ const ALL_QUESTIONS = [
       "It exchanges the promised return on an asset, including income but not capital gains/losses, for a return equal to LIBOR plus a spread on the initial value of the asset."
     ],
     ans: 0,
-    exp: "A total return swap exchanges the REALISED total return on a reference asset — including both income (coupons/dividends) AND capital gains or losses — for a floating rate payment (LIBOR/SOFR + spread). The key word is 'realised': actual returns, not promised ones."
+    exp: "A total return swap exchanges the REALISED total return — including both income AND capital gains or losses — for a floating rate payment."
   },
 ];
+
+// ── Best Streak persistence ────────────────────────────
+const STORAGE_KEY = 'ec4100_best_streak';
+
+function loadBestStreak() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved !== null ? parseInt(saved, 10) : 0;
+  } catch (e) {
+    return 0;
+  }
+}
+
+function saveBestStreak(val) {
+  try {
+    localStorage.setItem(STORAGE_KEY, String(val));
+  } catch (e) {}
+}
 
 // ── State ──────────────────────────────────────────────
 let queue = [];
@@ -1357,7 +1378,8 @@ let currentQ = null;
 let totalAnswered = 0;
 let totalCorrect = 0;
 let streak = 0;
-let qIndex = 0; // position within the current shuffled round
+let bestStreak = loadBestStreak();
+let qIndex = 0;
 
 function shuffle(arr) {
   const a = [...arr];
@@ -1373,11 +1395,34 @@ function refillQueue() {
   qIndex = 0;
 }
 
+function updateBestStreakDisplay() {
+  document.getElementById('s-best-streak').textContent = bestStreak > 0 ? bestStreak : '—';
+}
+
+function checkAndUpdateBestStreak() {
+  if (streak > bestStreak) {
+    bestStreak = streak;
+    saveBestStreak(bestStreak);
+    updateBestStreakDisplay();
+
+    // Flash the best streak card
+    const item = document.getElementById('best-streak-item');
+    item.classList.remove('flash');
+    void item.offsetWidth; // force reflow
+    item.classList.add('flash');
+
+    // Show new record banner
+    const banner = document.getElementById('new-record-banner');
+    banner.classList.add('show');
+    clearTimeout(banner._hideTimer);
+    banner._hideTimer = setTimeout(() => banner.classList.remove('show'), 3000);
+  }
+}
+
 function nextQuestion() {
   if (qIndex >= queue.length) refillQueue();
   currentQ = queue[qIndex++];
 
-  // Reset UI
   const card = document.getElementById('card');
   card.classList.remove('answered');
 
@@ -1407,11 +1452,10 @@ function nextQuestion() {
   const btn = document.getElementById('btn-next');
   btn.classList.remove('show');
 
-  // Update progress (% through current round)
   const pct = Math.round((qIndex / ALL_QUESTIONS.length) * 100);
   document.getElementById('progress').style.width = pct + '%';
 
-  updateStreak();
+  updateStreakDisplay();
 }
 
 function handleAnswer(chosen) {
@@ -1429,7 +1473,13 @@ function handleAnswer(chosen) {
   fb.innerHTML = `<strong>${isCorrect ? '✓ Correct!' : '✗ Incorrect'}</strong>${currentQ.exp}`;
 
   totalAnswered++;
-  if (isCorrect) { totalCorrect++; streak++; } else { streak = 0; }
+  if (isCorrect) {
+    totalCorrect++;
+    streak++;
+    checkAndUpdateBestStreak();
+  } else {
+    streak = 0;
+  }
 
   document.getElementById('s-total').textContent = totalAnswered;
   document.getElementById('s-correct').textContent = totalCorrect;
@@ -1437,12 +1487,12 @@ function handleAnswer(chosen) {
   document.getElementById('s-pct').textContent =
     Math.round((totalCorrect / totalAnswered) * 100) + '%';
 
-  updateStreak();
+  updateStreakDisplay();
   document.getElementById('card').classList.add('answered');
   document.getElementById('btn-next').classList.add('show');
 }
 
-function updateStreak() {
+function updateStreakDisplay() {
   const el = document.getElementById('streak');
   if (streak >= 3) {
     const emojis = streak >= 10 ? '🔥🔥🔥' : streak >= 7 ? '🔥🔥' : '🔥';
@@ -1452,7 +1502,8 @@ function updateStreak() {
   }
 }
 
-// Kick off
+// Initialise
+updateBestStreakDisplay();
 refillQueue();
 nextQuestion();
 </script>
@@ -1465,4 +1516,3 @@ nextQuestion();
 
 </body>
 </html>
-
